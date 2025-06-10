@@ -13,9 +13,20 @@
     // For more information on runes and reactivity, see: https://svelte.dev/docs/svelte/what-are-runes
     let meals: Meal[] = $state([]);
 
+    async function fetchMeals() {
+        try {
+            const response = await fetch(`${baseUrl}/mensa-garching/today`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            meals = await response.json();
+        } catch (error) {
+            console.error("Failed to fetch meals:", error);
+        }
+    }
     // Fetch data once on component mount
     onMount(async () => {
-       // TODO Fetch meals from the API running on the baseUrl
+       await fetchMeals();
     });
 </script>
 
@@ -30,7 +41,11 @@
             <p>Loading menu items...</p>
         </div>
     {:else}
-       <!-- TODO add food-grid here -->
+        <div class="food-grid">
+            {#each meals as meal}
+                <FoodCard {meal}/>
+            {/each}
+        </div>
     {/if}
 
     {#if meals.length === 0 && meals.length > 0}
